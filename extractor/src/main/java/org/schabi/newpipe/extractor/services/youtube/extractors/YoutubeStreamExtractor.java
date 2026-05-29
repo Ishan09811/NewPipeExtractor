@@ -698,7 +698,7 @@ public class YoutubeStreamExtractor extends StreamExtractor {
     }
 
     public String getSabrStreamingUrl() {
-        return playerResponse.getObject("streamingData").getString("serverAbrStreamingUrl")
+        return playerResponse.getObject("streamingData").getString("serverAbrStreamingUrl");
     }
 
     @Override
