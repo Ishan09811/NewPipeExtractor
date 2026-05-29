@@ -697,6 +697,10 @@ public class YoutubeStreamExtractor extends StreamExtractor {
                 getVideoStreamBuilderHelper(true), "video-only");
     }
 
+    public String getSabrStreamingUrl() {
+        return playerResponse.getObject("streamingData").getString("serverAbrStreamingUrl")
+    }
+
     @Override
     @Nonnull
     public List<SubtitlesStream> getSubtitlesDefault() throws ParsingException {
