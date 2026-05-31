@@ -190,9 +190,11 @@ publishing {
     }
 }
 
-signing {
-    useInMemoryPgpKeys(ciSigningKey, ciSigningPassword)
-    sign(publishing.publications["snapshot"])
+if (System.getenv("JITPACK") != "true") {
+    signing {
+        useInMemoryPgpKeys(ciSigningKey, ciSigningPassword)
+        sign(publishing.publications["snapshot"])
+    }
 }
 
 tasks.withType<Sign> {
