@@ -1325,7 +1325,7 @@ public class YoutubeStreamExtractor extends StreamExtractor {
             @Nonnull final ItagItem.ItagType itagType,
             @Nonnull final String contentPlaybackNonce,
             @Nullable final String poToken) throws ExtractionException {
-        String streamUrl = null;
+        String streamUrl = "";
         if (formatData.has("url")) {
             streamUrl = formatData.getString("url");
         } else {
@@ -1339,9 +1339,7 @@ public class YoutubeStreamExtractor extends StreamExtractor {
                     final String signature = YoutubeJavaScriptPlayerManager.deobfuscateSignature(videoId,
                             cipher.getOrDefault("s", ""));
                     streamUrl = cipher.get("url") + "&" + cipher.get("sp") + "=" + signature;
-                } catch (ExtractionException e) {
-                    streamUrl = null;
-                }
+                } catch (ExtractionException e) {}
             }
         }
 
@@ -1362,9 +1360,7 @@ public class YoutubeStreamExtractor extends StreamExtractor {
             if (poToken != null) {
                 streamUrl += "&pot=" + poToken;
             }
-        } catch (ExtractionException e) {
-            streamUrl = null;
-        }
+        } catch (ExtractionException e) {}
 
         final JsonObject initRange = formatData.getObject("initRange");
         final JsonObject indexRange = formatData.getObject("indexRange");
@@ -1413,7 +1409,7 @@ public class YoutubeStreamExtractor extends StreamExtractor {
                             audioTrackId.substring(0, audioTrackIdLastLocaleCharacter)
                     ).ifPresent(itagItem::setAudioLocale);
                 }
-                if (streamUrl != null) {
+                if (!isNullOrEmpty(streamUrl)) {
                     itagItem.setAudioTrackType(YoutubeParsingHelper.extractAudioTrackType(streamUrl));
                 }
             }
