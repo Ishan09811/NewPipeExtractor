@@ -1333,14 +1333,16 @@ public class YoutubeStreamExtractor extends StreamExtractor {
             final String cipherString = formatData.getString(CIPHER,
                     formatData.getString(SIGNATURE_CIPHER));
 
-            if (isNullOrEmpty(cipherString)) {
-                return null;
+            if (!isNullOrEmpty(cipherString)) {
+                try {
+                    final var cipher = Parser.compatParseMap(cipherString);
+                    final String signature = YoutubeJavaScriptPlayerManager.deobfuscateSignature(videoId,
+                            cipher.getOrDefault("s", ""));
+                    streamUrl = cipher.get("url") + "&" + cipher.get("sp") + "=" + signature;
+                } catch (ExtractionException e) {
+                    streamUrl = null;
+                }
             }
-
-            final var cipher = Parser.compatParseMap(cipherString);
-            final String signature = YoutubeJavaScriptPlayerManager.deobfuscateSignature(videoId,
-                    cipher.getOrDefault("s", ""));
-            streamUrl = cipher.get("url") + "&" + cipher.get("sp") + "=" + signature;
         }
 
         // Decode the n parameter if it is present
@@ -1349,15 +1351,19 @@ public class YoutubeStreamExtractor extends StreamExtractor {
         // Exceptions thrown by
         // YoutubeJavaScriptPlayerManager.getUrlWithThrottlingParameterDeobfuscated are so
         // propagated to the parent which ignores streams in this case
-        streamUrl = YoutubeJavaScriptPlayerManager.getUrlWithThrottlingParameterDeobfuscated(
-                videoId, streamUrl);
+        try {
+            streamUrl = YoutubeJavaScriptPlayerManager.getUrlWithThrottlingParameterDeobfuscated(
+                    videoId, streamUrl);
 
-        // Add the content playback nonce to the stream URL
-        streamUrl += "&" + CPN + "=" + contentPlaybackNonce;
+            // Add the content playback nonce to the stream URL
+            streamUrl += "&" + CPN + "=" + contentPlaybackNonce;
 
-        // Add the poToken, if there is one
-        if (poToken != null) {
-            streamUrl += "&pot=" + poToken;
+            // Add the poToken, if there is one
+            if (poToken != null) {
+                streamUrl += "&pot=" + poToken;
+            }
+        } catch (ExtractionException e) {
+            streamUrl = null;
         }
 
         final JsonObject initRange = formatData.getObject("initRange");
@@ -1407,7 +1413,9 @@ public class YoutubeStreamExtractor extends StreamExtractor {
                             audioTrackId.substring(0, audioTrackIdLastLocaleCharacter)
                     ).ifPresent(itagItem::setAudioLocale);
                 }
-                itagItem.setAudioTrackType(YoutubeParsingHelper.extractAudioTrackType(streamUrl));
+                if (streamUrl != null) {
+                    itagItem.setAudioTrackType(YoutubeParsingHelper.extractAudioTrackType(streamUrl));
+                }
             }
 
             itagItem.setAudioTrackName(formatData.getObject("audioTrack")
