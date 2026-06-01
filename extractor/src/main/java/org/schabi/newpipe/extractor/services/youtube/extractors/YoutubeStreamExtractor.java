@@ -1325,7 +1325,7 @@ public class YoutubeStreamExtractor extends StreamExtractor {
             @Nonnull final ItagItem.ItagType itagType,
             @Nonnull final String contentPlaybackNonce,
             @Nullable final String poToken) throws ExtractionException {
-        String streamUrl;
+        String streamUrl = null;
         if (formatData.has("url")) {
             streamUrl = formatData.getString("url");
         } else {
